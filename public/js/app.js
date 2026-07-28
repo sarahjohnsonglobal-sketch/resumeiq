@@ -333,8 +333,16 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const response = await fetch('/api/analyze', {
         method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
         body: formData
       });
+
+      if (response.status === 401) {
+        window.location.href = '/login.html';
+        return;
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -915,10 +923,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch('/api/report/pdf', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
         },
         body: JSON.stringify(lastAnalysisResult)
       });
+      
+      if (response.status === 401) {
+        window.location.href = '/login.html';
+        return;
+      }
 
       if (!response.ok) throw new Error('PDF generation failed.');
 
@@ -1034,12 +1048,20 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const response = await fetch('/api/improve', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
         body: JSON.stringify({
           resumeText: text,
           jobDescription: jdInput.value
         })
       });
+
+      if (response.status === 401) {
+        window.location.href = '/login.html';
+        return;
+      }
 
       if (!response.ok) throw new Error('Improvement failed');
 
