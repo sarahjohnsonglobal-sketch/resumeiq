@@ -10,26 +10,32 @@ const { analyzeATS } = require('./atsEngine');
 const { analyzeAI, improveAI } = require('./aiEngine');
 const { generatePDFReport } = require('./pdfGenerator');
 
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const db = require('./db');
-
 const app = express();
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-default-key-for-dev';
+const FIREBASE_API_KEY = 'AIzaSyAnpXwM5uP-AEofDIRpU93_qSinxTcsF0M';
 
-// Authentication Middleware
+async function verifyFirebaseToken(idToken) {
+  const res = await fetch(`https://identitytoolkit.googleapis.com/google/v1/accounts:lookup?key=${FIREBASE_API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ idToken })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || 'Invalid token');
+  return data.users[0];
+}
+
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  
   if (!token) return res.status(401).json({ error: 'Access denied. No token provided.' });
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Invalid or expired token.' });
+  verifyFirebaseToken(token).then(user => {
     req.user = user;
     next();
+  }).catch(() => {
+    res.status(403).json({ error: 'Invalid or expired token.' });
   });
 }
+
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
@@ -40,50 +46,6 @@ const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 }
-});
-
-// Auth Routes
-app.post('/api/signup', async (req, res) => {
-  const { username, email, password } = req.body;
-  
-  if (!username || !email || !password) {
-    return res.status(400).json({ error: 'All fields are required.' });
-  }
-
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const query = `INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)`;
-    db.run(query, [username, email, hashedPassword], function(err) {
-      if (err) {
-        if (err.message.includes('UNIQUE constraint failed')) {
-          return res.status(409).json({ error: 'Username or email already exists.' });
-        }
-        return res.status(500).json({ error: 'Failed to create user.' });
-      }
-      res.status(201).json({ message: 'User created successfully.', userId: this.lastID });
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'Server error during signup.' });
-  }
-});
-
-app.post('/api/login', (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required.' });
-  }
-
-  db.get(`SELECT * FROM users WHERE email = ?`, [email], async (err, user) => {
-    if (err) return res.status(500).json({ error: 'Database error.' });
-    if (!user) return res.status(401).json({ error: 'Invalid email or password.' });
-
-    const match = await bcrypt.compare(password, user.password_hash);
-    if (!match) return res.status(401).json({ error: 'Invalid email or password.' });
-
-    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
-    res.json({ message: 'Login successful.', token, username: user.username });
-  });
 });
 
 app.post('/api/analyze', authenticateToken, upload.single('resumeFile'), async (req, res) => {
@@ -102,7 +64,6 @@ app.post('/api/analyze', authenticateToken, upload.single('resumeFile'), async (
 
     console.log(`Parsing file: ${fileName} (${req.file.size} bytes)`);
 
-    // Extract text based on file format
     if (fileExt === '.pdf') {
       try {
         const data = await pdfParse(fileBuffer);
@@ -133,13 +94,9 @@ app.post('/api/analyze', authenticateToken, upload.single('resumeFile'), async (
       return res.status(422).json({ error: 'Uploaded resume appears to be empty or unreadable.' });
     }
 
-    // Run ATS checks
     const atsResult = analyzeATS(extractedText, fileExt, pdfMetadata, fileBuffer);
-
-    // Run AI analysis (falls back to local heuristic if no API keys)
     const aiResult = await analyzeAI(extractedText, jobDescription);
 
-    // Combine scores
     let overallScore = 0;
     let categoryScores = {
       ats: atsResult.atsScore,
@@ -151,19 +108,15 @@ app.post('/api/analyze', authenticateToken, upload.single('resumeFile'), async (
     const hasJD = !!(jobDescription && jobDescription.trim().length > 0);
 
     if (hasJD) {
-      // 4 Categories scaled to /100 (max: 20+20+20+25 = 85)
       const activeSum = categoryScores.ats + categoryScores.structure + categoryScores.content + categoryScores.keywordMatch;
       overallScore = Math.round((activeSum / 85) * 100);
     } else {
-      // 3 Categories scaled to /100 (max: 20+20+20 = 60)
       const activeSum = categoryScores.ats + categoryScores.structure + categoryScores.content;
       overallScore = Math.round((activeSum / 60) * 100);
-      categoryScores.keywordMatch = 0; // Exclude
+      categoryScores.keywordMatch = 0;
     }
 
-    // Merge issues list
     const combinedIssues = [...atsResult.issues, ...aiResult.issues];
-
     const hasKeys = !!(process.env.ANTHROPIC_API_KEY || process.env.GEMINI_API_KEY);
 
     const responsePayload = {
@@ -195,7 +148,6 @@ app.post('/api/improve', authenticateToken, async (req, res) => {
     if (!resumeText || resumeText.trim().length === 0) {
       return res.status(400).json({ error: 'Resume text is required.' });
     }
-
     console.log('Processing resume improvement...');
     const improvedText = await improveAI(resumeText, jobDescription || '');
     return res.json({ improvedText });
@@ -211,10 +163,8 @@ app.post('/api/report/pdf', authenticateToken, (req, res) => {
     if (!analysisData || typeof analysisData.overallScore === 'undefined') {
       return res.status(400).json({ error: 'Invalid analysis data provided.' });
     }
-
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=Resume_Report.pdf');
-
     generatePDFReport(analysisData, res);
   } catch (error) {
     console.error('PDF generation error:', error);
@@ -224,12 +174,10 @@ app.post('/api/report/pdf', authenticateToken, (req, res) => {
   }
 });
 
-// Fallback to index.html for SPA routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Start listening (local dev only)
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

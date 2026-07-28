@@ -1,35 +1,48 @@
-let nextId = 1;
-const users = [];
+const { initializeApp } = require('firebase/app');
+const { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } = require('firebase/firestore/lite');
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAnpXwM5uP-AEofDIRpU93_qSinxTcsF0M",
+  authDomain: "resumeiq-8af5f.firebaseapp.com",
+  projectId: "resumeiq-8af5f",
+  storageBucket: "resumeiq-8af5f.firebasestorage.app",
+  messagingSenderId: "686911293132",
+  appId: "1:686911293132:web:fb820445242ea384aea469"
+};
+
+const app = initializeApp(firebaseConfig);
+const firestore = getFirestore(app);
 
 const database = {
-  run(sql, params, callback) {
+  async run(sql, params, callback) {
     try {
       if (sql.trim().toUpperCase().startsWith('INSERT')) {
-        const existing = users.find(u => u.email === params[1] || u.username === params[0]);
-        if (existing) {
-          const err = new Error('UNIQUE constraint failed');
-          return callback(err);
+        const [username, email, password_hash] = params;
+
+        const q = query(collection(firestore, 'users'), where('email', '==', email));
+        const existing = await getDocs(q);
+        if (!existing.empty) {
+          return callback(new Error('UNIQUE constraint failed'));
         }
-        const user = {
-          id: nextId++,
-          username: params[0],
-          email: params[1],
-          password_hash: params[2],
-          created_at: new Date().toISOString()
-        };
-        users.push(user);
-        callback.call({ lastID: user.id }, null);
+
+        const userRef = doc(collection(firestore, 'users'));
+        const user = { id: userRef.id, username, email, password_hash, created_at: new Date().toISOString() };
+        await setDoc(userRef, user);
+        callback.call({ lastID: userRef.id }, null);
       }
     } catch (err) {
       callback(err);
     }
   },
 
-  get(sql, params, callback) {
+  async get(sql, params, callback) {
     try {
       const email = params[0];
-      const user = users.find(u => u.email === email);
-      callback(null, user || null);
+      const q = query(collection(firestore, 'users'), where('email', '==', email));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) return callback(null, null);
+      const data = snapshot.docs[0].data();
+      callback(null, data);
     } catch (err) {
       callback(err);
     }
