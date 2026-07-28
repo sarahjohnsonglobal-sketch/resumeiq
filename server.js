@@ -3,7 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
-const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 
 const { analyzeATS } = require('./atsEngine');
@@ -48,10 +47,20 @@ app.post('/api/analyze', authenticateToken, upload.single('resumeFile'), async (
 
     if (fileExt === '.pdf') {
       try {
-        const data = await pdfParse(fileBuffer);
-        extractedText = data.text;
-        pdfMetadata = { numpages: data.numpages, info: data.info };
+        const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+        const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(fileBuffer) });
+        const pdfDoc = await loadingTask.promise;
+        pdfMetadata.numpages = pdfDoc.numPages;
+        let pages = [];
+        for (let i = 1; i <= pdfDoc.numPages; i++) {
+          const page = await pdfDoc.getPage(i);
+          const content = await page.getTextContent();
+          const text = content.items.map(s => s.str).join(' ');
+          pages.push(text);
+        }
+        extractedText = pages.join('\n\n');
       } catch (err) {
+        console.error('PDF parsing error:', err);
         return res.status(422).json({ error: 'Failed to parse PDF file. Ensure the document is not corrupted.' });
       }
     } else if (fileExt === '.docx') {
