@@ -88,6 +88,8 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
   }
+
+  updateNavForAuth();
 });
 
 function getToken() {
@@ -121,23 +123,4 @@ function updateNavForAuth() {
       '<a href="login.html" class="btn btn-secondary btn-nav" style="background: transparent; border: 1px solid var(--primary); color: #fff; margin-right: 10px;"><span>Log In</span></a>' +
       '<a href="signup.html" class="btn btn-primary btn-nav"><span>Sign Up</span></a>';
   }
-}
-
-if (!window.location.pathname.includes('login.html') && !window.location.pathname.includes('signup.html')) {
-  document.addEventListener('DOMContentLoaded', function() {
-    updateNavForAuth();
-    if (window.location.pathname.includes('analyze.html')) {
-      auth.onAuthStateChanged(function(user) {
-        if (user) {
-          user.getIdToken().then(function(token) {
-            localStorage.setItem('token', token);
-          });
-        } else {
-          localStorage.removeItem('token');
-          localStorage.removeItem('username');
-          window.location.href = '/login.html';
-        }
-      });
-    }
-  });
 }

@@ -327,13 +327,6 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('resumeFile', selectedFile);
     formData.append('jobDescription', jdInput.value);
 
-    if (typeof firebase !== 'undefined' && firebase.auth) {
-      var currentUser = firebase.auth().currentUser;
-      if (currentUser) {
-        try { var freshToken = await currentUser.getIdToken(true); localStorage.setItem('token', freshToken); } catch(e) {}
-      }
-    }
-
     let apiResponse = null;
     let apiError = null;
 
