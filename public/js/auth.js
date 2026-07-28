@@ -1,4 +1,4 @@
-const firebaseConfig = {
+var firebaseConfig = {
   apiKey: "AIzaSyAnpXwM5uP-AEofDIRpU93_qSinxTcsF0M",
   authDomain: "resumeiq-8af5f.firebaseapp.com",
   projectId: "resumeiq-8af5f",
@@ -8,90 +8,84 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+var auth = firebase.auth();
+var db = firebase.firestore();
 
-document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('loginForm');
-  const signupForm = document.getElementById('signupForm');
-  const googleBtn = document.getElementById('googleSignIn');
+document.addEventListener('DOMContentLoaded', function() {
+  var loginForm = document.getElementById('loginForm');
+  var signupForm = document.getElementById('signupForm');
+  var googleBtn = document.getElementById('googleSignIn');
 
   if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
+    loginForm.addEventListener('submit', function(e) {
       e.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const errorDiv = document.getElementById('loginError');
+      var email = document.getElementById('email').value;
+      var password = document.getElementById('password').value;
+      var errorDiv = document.getElementById('loginError');
 
-      try {
-        const cred = await auth.signInWithEmailAndPassword(email, password);
-        const token = await cred.user.getIdToken();
-        localStorage.setItem('token', token);
-        localStorage.setItem('username', cred.user.displayName || email.split('@')[0]);
-        window.location.href = '/analyze.html';
-      } catch (err) {
+      auth.signInWithEmailAndPassword(email, password).then(function(cred) {
+        return cred.user.getIdToken().then(function(token) {
+          localStorage.setItem('token', token);
+          localStorage.setItem('username', cred.user.displayName || email.split('@')[0]);
+          window.location.href = '/analyze.html';
+        });
+      }).catch(function(err) {
         errorDiv.textContent = err.message;
         errorDiv.style.display = 'block';
-      }
+      });
     });
   }
 
   if (signupForm) {
-    signupForm.addEventListener('submit', async (e) => {
+    signupForm.addEventListener('submit', function(e) {
       e.preventDefault();
-      const username = document.getElementById('username').value;
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const errorDiv = document.getElementById('signupError');
+      var username = document.getElementById('username').value;
+      var email = document.getElementById('email').value;
+      var password = document.getElementById('password').value;
+      var errorDiv = document.getElementById('signupError');
 
-      try {
-        const cred = await auth.createUserWithEmailAndPassword(email, password);
-        await cred.user.updateProfile({ displayName: username });
-        await db.collection('users').doc(cred.user.uid).set({
-          username,
-          email,
-          created_at: new Date().toISOString()
+      auth.createUserWithEmailAndPassword(email, password).then(function(cred) {
+        return cred.user.updateProfile({ displayName: username }).then(function() {
+          return db.collection('users').doc(cred.user.uid).set({
+            username: username,
+            email: email,
+            created_at: new Date().toISOString()
+          });
+        }).then(function() {
+          return cred.user.getIdToken();
+        }).then(function(token) {
+          localStorage.setItem('token', token);
+          localStorage.setItem('username', username);
+          window.location.href = '/analyze.html';
         });
-        const token = await cred.user.getIdToken();
-        localStorage.setItem('token', token);
-        localStorage.setItem('username', username);
-        window.location.href = '/analyze.html';
-      } catch (err) {
+      }).catch(function(err) {
         errorDiv.textContent = err.message;
         errorDiv.style.display = 'block';
-      }
+      });
     });
   }
 
   if (googleBtn) {
-    googleBtn.addEventListener('click', async () => {
-      const errorDiv = document.getElementById('loginError');
-      const provider = new firebase.auth.GoogleAuthProvider();
-      try {
-        const cred = await auth.signInWithPopup(provider);
-        const user = cred.user;
-        await db.collection('users').doc(user.uid).set({
+    googleBtn.addEventListener('click', function() {
+      var errorDiv = document.getElementById('loginError');
+      var provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).then(function(cred) {
+        var user = cred.user;
+        return db.collection('users').doc(user.uid).set({
           username: user.displayName,
           email: user.email,
           created_at: new Date().toISOString()
-        }, { merge: true });
-        const token = await user.getIdToken();
-        localStorage.setItem('token', token);
-        localStorage.setItem('username', user.displayName);
-        window.location.href = '/analyze.html';
-      } catch (err) {
+        }, { merge: true }).then(function() {
+          return user.getIdToken();
+        }).then(function(token) {
+          localStorage.setItem('token', token);
+          localStorage.setItem('username', user.displayName);
+          window.location.href = '/analyze.html';
+        });
+      }).catch(function(err) {
         errorDiv.textContent = err.message;
         errorDiv.style.display = 'block';
-      }
-    });
-  }
-
-  if (!window.location.pathname.includes('login.html') && !window.location.pathname.includes('signup.html')) {
-    document.addEventListener('DOMContentLoaded', () => {
-      updateNavForAuth();
-      if (window.location.pathname.includes('analyze.html') && !getToken()) {
-        window.location.href = '/login.html';
-      }
+      });
     });
   }
 });
@@ -101,27 +95,49 @@ function getToken() {
 }
 
 function logout() {
-  auth.signOut();
-  localStorage.removeItem('token');
-  localStorage.removeItem('username');
-  window.location.href = '/login.html';
+  auth.signOut().then(function() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    window.location.href = '/login.html';
+  }).catch(function() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    window.location.href = '/login.html';
+  });
 }
 
 function updateNavForAuth() {
-  const navActions = document.querySelector('.header-nav-actions');
+  var navActions = document.querySelector('.header-nav-actions');
   if (!navActions) return;
-  const token = getToken();
-  const username = localStorage.getItem('username');
+  var token = getToken();
+  var username = localStorage.getItem('username');
   if (token) {
-    navActions.innerHTML = `
-      <span style="color: #fff; margin-right: 15px;">Hi, ${username}</span>
-      <a href="analyze.html" class="btn btn-primary btn-nav" style="margin-right: 10px;"><span>Analyze</span></a>
-      <button onclick="logout()" class="btn btn-secondary btn-nav" style="background: transparent; border: 1px solid var(--primary); color: #fff;"><span>Logout</span></button>
-    `;
+    navActions.innerHTML =
+      '<span style="color: #fff; margin-right: 15px;">Hi, ' + username + '</span>' +
+      '<a href="analyze.html" class="btn btn-primary btn-nav" style="margin-right: 10px;"><span>Analyze</span></a>' +
+      '<button onclick="logout()" class="btn btn-secondary btn-nav" style="background: transparent; border: 1px solid var(--primary); color: #fff;"><span>Logout</span></button>';
   } else {
-    navActions.innerHTML = `
-      <a href="login.html" class="btn btn-secondary btn-nav" style="background: transparent; border: 1px solid var(--primary); color: #fff; margin-right: 10px;"><span>Log In</span></a>
-      <a href="signup.html" class="btn btn-primary btn-nav"><span>Sign Up</span></a>
-    `;
+    navActions.innerHTML =
+      '<a href="login.html" class="btn btn-secondary btn-nav" style="background: transparent; border: 1px solid var(--primary); color: #fff; margin-right: 10px;"><span>Log In</span></a>' +
+      '<a href="signup.html" class="btn btn-primary btn-nav"><span>Sign Up</span></a>';
   }
+}
+
+if (!window.location.pathname.includes('login.html') && !window.location.pathname.includes('signup.html')) {
+  document.addEventListener('DOMContentLoaded', function() {
+    updateNavForAuth();
+    if (window.location.pathname.includes('analyze.html')) {
+      auth.onAuthStateChanged(function(user) {
+        if (user) {
+          user.getIdToken().then(function(token) {
+            localStorage.setItem('token', token);
+          });
+        } else {
+          localStorage.removeItem('token');
+          localStorage.removeItem('username');
+          window.location.href = '/login.html';
+        }
+      });
+    }
+  });
 }

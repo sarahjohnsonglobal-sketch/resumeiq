@@ -327,6 +327,13 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('resumeFile', selectedFile);
     formData.append('jobDescription', jdInput.value);
 
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+      var currentUser = firebase.auth().currentUser;
+      if (currentUser) {
+        try { var freshToken = await currentUser.getIdToken(true); localStorage.setItem('token', freshToken); } catch(e) {}
+      }
+    }
+
     let apiResponse = null;
     let apiError = null;
 
@@ -339,7 +346,9 @@ document.addEventListener('DOMContentLoaded', () => {
         body: formData
       });
 
-      if (response.status === 401) {
+      if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
         window.location.href = '/login.html';
         return;
       }
@@ -929,7 +938,7 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify(lastAnalysisResult)
       });
       
-      if (response.status === 401) {
+      if (response.status === 401 || response.status === 403) {
         window.location.href = '/login.html';
         return;
       }
@@ -1058,7 +1067,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
       });
 
-      if (response.status === 401) {
+      if (response.status === 401 || response.status === 403) {
         window.location.href = '/login.html';
         return;
       }
