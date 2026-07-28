@@ -60,8 +60,36 @@ app.post('/api/analyze', authenticateToken, upload.single('resumeFile'), async (
         }
         extractedText = pages.join('\n\n');
       } catch (err) {
-        console.error('PDF parsing error:', err);
-        return res.status(422).json({ error: 'Failed to parse PDF file. Ensure the document is not corrupted.' });
+        console.error('pdfjs-dist failed, trying raw extraction:', err.message);
+        try {
+          const raw = fileBuffer.toString('binary');
+          const textParts = [];
+          const parenRegex = /\(([^)]*)\)/g;
+          let m;
+          while ((m = parenRegex.exec(raw)) !== null) {
+            const t = m[1].replace(/\\[0-9]{3}/g, '').replace(/\\(.)/g, '$1');
+            if (t.length > 2) textParts.push(t);
+          }
+          extractedText = textParts.join(' ').replace(/\s+/g, ' ').trim();
+          if (extractedText.length < 10) {
+            const btRegex = /BT\s*([\s\S]*?)\s*ET/g;
+            let bt;
+            while ((bt = btRegex.exec(raw)) !== null) {
+              const block = bt[1].replace(/\(([^)]*)\)/g, '$1').replace(/\[([^\]]*)\]/g, '$1');
+              if (block.length > 3) textParts.push(block);
+            }
+            extractedText = textParts.join(' ').replace(/\s+/g, ' ').trim();
+          }
+          if (extractedText.length < 10) {
+            const plain = fileBuffer.toString('utf-8').replace(/[^a-zA-Z0-9 \.,;:\-!?@#\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
+            if (plain.length > extractedText.length) extractedText = plain;
+          }
+        } catch (rawErr) {
+          console.error('Raw PDF extraction also failed:', rawErr.message);
+        }
+        if (!extractedText || extractedText.trim().length < 10) {
+          return res.status(422).json({ error: 'Failed to parse PDF file. Ensure the document is not corrupted.' });
+        }
       }
     } else if (fileExt === '.docx') {
       try {
