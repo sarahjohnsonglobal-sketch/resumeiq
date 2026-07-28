@@ -1,86 +1,38 @@
-const initSqlJs = require('sql.js');
-const path = require('path');
-
-let db = null;
-let SQL = null;
-
-async function getDb() {
-  if (db) return db;
-
-  SQL = await initSqlJs();
-  
-  const dbPath = path.join('/tmp', 'database.sqlite');
-  try {
-    const fs = require('fs');
-    if (fs.existsSync(dbPath)) {
-      const buffer = fs.readFileSync(dbPath);
-      db = new SQL.Database(buffer);
-    } else {
-      db = new SQL.Database();
-    }
-  } catch {
-    db = new SQL.Database();
-  }
-
-  db.run(`CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE,
-    email TEXT UNIQUE,
-    password_hash TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-
-  return db;
-}
-
-function saveDb() {
-  try {
-    if (!db) return;
-    const data = db.export();
-    const buffer = Buffer.from(data);
-    const fs = require('fs');
-    const dbPath = path.join('/tmp', 'database.sqlite');
-    fs.writeFileSync(dbPath, buffer);
-  } catch {
-    // ignore - in-memory only is fine
-  }
-}
+let nextId = 1;
+const users = [];
 
 const database = {
   run(sql, params, callback) {
-    getDb().then(() => {
-      try {
-        db.run(sql, params);
-        const result = db.exec("SELECT last_insert_rowid() as id");
-        const lastID = result.length > 0 ? result[0].values[0][0] : 0;
-        saveDb();
-        callback.call({ lastID }, null);
-      } catch (err) {
-        callback(err);
+    try {
+      if (sql.trim().toUpperCase().startsWith('INSERT')) {
+        const existing = users.find(u => u.email === params[1] || u.username === params[0]);
+        if (existing) {
+          const err = new Error('UNIQUE constraint failed');
+          return callback(err);
+        }
+        const user = {
+          id: nextId++,
+          username: params[0],
+          email: params[1],
+          password_hash: params[2],
+          created_at: new Date().toISOString()
+        };
+        users.push(user);
+        callback.call({ lastID: user.id }, null);
       }
-    }).catch(callback);
+    } catch (err) {
+      callback(err);
+    }
   },
 
   get(sql, params, callback) {
-    getDb().then(() => {
-      try {
-        const stmt = db.prepare(sql);
-        stmt.bind(params);
-        if (stmt.step()) {
-          const columns = stmt.getColumnNames();
-          const values = stmt.get();
-          const row = {};
-          columns.forEach((col, i) => { row[col] = values[i]; });
-          stmt.free();
-          callback(null, row);
-        } else {
-          stmt.free();
-          callback(null, null);
-        }
-      } catch (err) {
-        callback(err);
-      }
-    }).catch(callback);
+    try {
+      const email = params[0];
+      const user = users.find(u => u.email === email);
+      callback(null, user || null);
+    } catch (err) {
+      callback(err);
+    }
   }
 };
 
