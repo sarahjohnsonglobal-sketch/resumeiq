@@ -10,7 +10,7 @@ const { analyzeATS } = require('./atsEngine');
 const { analyzeAI, improveAI } = require('./aiEngine');
 const { generatePDFReport } = require('./pdfGenerator');
 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('./db');
 
@@ -229,7 +229,11 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Start listening
-app.listen(PORT, () => {
+// Start listening (local dev only)
+if (require.main === module) {
+  app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-});
+  });
+}
+
+module.exports = app;
