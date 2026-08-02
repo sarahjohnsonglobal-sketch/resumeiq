@@ -64,6 +64,51 @@
 }
 
 /* --------------------------------------------------
+   1b. Dark Mode Variables
+   -------------------------------------------------- */
+[data-theme="dark"] {
+  --surface: #0B0F19;
+  --surface-gray: #0B0F19;
+  --surface-container-lowest: #111827;
+  --surface-container-low: #1a2236;
+  --surface-container: #1e293b;
+  --surface-container-high: #2d3a4f;
+  --surface-container-highest: #3b4a63;
+
+  --on-surface: #F8FAFC;
+  --on-surface-variant: #94A3B8;
+  --outline: #94A3B8;
+  --outline-variant: #334155;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+
+  --primary: #818CF8;
+  --primary-rgb: 129, 140, 248;
+  --on-primary: #0B0F19;
+  --primary-container: #4F46E5;
+  --on-primary-container: #C7D2FE;
+  --primary-fixed: rgba(79, 70, 229, 0.15);
+  --primary-glow: rgba(129, 140, 248, 0.08);
+
+  --secondary: #34D399;
+  --secondary-fixed: rgba(52, 211, 153, 0.15);
+  --success: #34D399;
+  --success-bg: rgba(52, 211, 153, 0.1);
+
+  --tertiary: #FB7185;
+  --issue-coral: #FB7185;
+  --critical: #FB7185;
+  --critical-bg: rgba(251, 113, 133, 0.1);
+
+  --warning: #FBBF24;
+  --warning-bg: rgba(251, 191, 36, 0.1);
+  --suggestion: #818CF8;
+  --suggestion-bg: rgba(129, 140, 248, 0.1);
+
+  --ambient-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --elevated-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+}
+
+/* --------------------------------------------------
    2. CSS Reset & Base
    -------------------------------------------------- */
 *,
@@ -2199,4 +2244,143 @@ h1, h2, h3, h4, h5, h6 {
 .google-btn:hover {
   background: var(--surface-container-low);
   border-color: var(--primary);
+}
+
+/* --------------------------------------------------
+   19. Theme Toggle Button
+   -------------------------------------------------- */
+.theme-toggle {
+  background: var(--surface-container-low);
+  border: 1px solid var(--border-subtle);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  color: var(--on-surface-variant);
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  background: var(--primary-glow);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.theme-toggle .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+
+[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+/* --------------------------------------------------
+   20. Dark Mode Specific Overrides
+   -------------------------------------------------- */
+[data-theme="dark"] .app-header {
+  background: rgba(11, 15, 25, 0.85);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .app-action-bar {
+  background: rgba(11, 15, 25, 0.9);
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .btn-primary {
+  background: #4F46E5;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .btn-primary:hover:not(:disabled) {
+  background: #6366F1;
+}
+
+[data-theme="dark"] .btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--on-surface);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .hero-title {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .section-title {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .feat-title,
+[data-theme="dark"] .step-title-simple,
+[data-theme="dark"] .trust-card-title,
+[data-theme="dark"] .role-title {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .footer-col-title {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .score-number,
+[data-theme="dark"] .section-score-num,
+[data-theme="dark"] .issue-title,
+[data-theme="dark"] .section-card-title {
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .drag-drop-zone {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+[data-theme="dark"] .radar-scanner {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+[data-theme="dark"] .improver-loading {
+  background: rgba(11, 15, 25, 0.9);
+}
+
+[data-theme="dark"] .auth-container {
+  background: var(--surface-container-lowest);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .google-btn {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--on-surface);
+}
+
+[data-theme="dark"] .google-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .radar-dots {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+[data-theme="dark"] .step-item.active .step-indicator {
+  box-shadow: 0 0 8px rgba(129, 140, 248, 0.15);
+}
+
+[data-theme="dark"] .filter-tabs {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .tab-btn.active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .form-select option {
+  background: var(--surface-container-lowest);
 }

@@ -33,6 +33,10 @@
         </div>
       </a>
       <div class="header-nav-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+          <span class="material-symbols-outlined icon-moon">dark_mode</span>
+          <span class="material-symbols-outlined icon-sun">light_mode</span>
+        </button>
         <a href="analyze.html" class="btn btn-primary btn-nav">
           <span>Analyze Resume</span>
           <span class="material-symbols-outlined btn-icon">arrow_forward</span>
@@ -410,6 +414,9 @@
     </div>
   </footer>
 
+  <!-- Theme Toggle (load first to prevent flash) -->
+  <script src="js/theme.js"></script>
+  
   <!-- GSAP CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   

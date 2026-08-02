@@ -111,16 +111,27 @@ function logout() {
 function updateNavForAuth() {
   var navActions = document.querySelector('.header-nav-actions');
   if (!navActions) return;
+
+  // Preserve the theme toggle button
+  var themeToggle = navActions.querySelector('.theme-toggle');
+  var toggleHtml = themeToggle ? themeToggle.outerHTML : '';
+
   var token = getToken();
   var username = localStorage.getItem('username');
   if (token) {
-    navActions.innerHTML =
+    navActions.innerHTML = toggleHtml +
       '<span style="color: var(--on-surface-variant); margin-right: 15px; font-size: 14px;">Hi, ' + username + '</span>' +
       '<a href="analyze.html" class="btn btn-primary btn-nav" style="margin-right: 10px;"><span>Analyze</span></a>' +
       '<button onclick="logout()" class="btn btn-secondary btn-nav" style="margin-right: 10px;"><span>Logout</span></button>';
   } else {
-    navActions.innerHTML =
+    navActions.innerHTML = toggleHtml +
       '<a href="login.html" class="btn btn-secondary btn-nav" style="margin-right: 10px;"><span>Log In</span></a>' +
       '<a href="signup.html" class="btn btn-primary btn-nav"><span>Sign Up</span></a>';
+  }
+
+  // Re-attach theme toggle event listener after DOM rebuild
+  var newToggle = document.getElementById('themeToggle');
+  if (newToggle && typeof themeToggleHandler === 'function') {
+    newToggle.addEventListener('click', themeToggleHandler);
   }
 }
