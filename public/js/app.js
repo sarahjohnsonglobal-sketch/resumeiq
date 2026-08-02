@@ -4,26 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   
-  // Initialize Lucide Icons
-  if (typeof lucide !== 'undefined') {
-    lucide.createIcons();
-  }
-
-  // Initialize Lenis Smooth Scroll
-  let lenisInstance;
-  if (typeof Lenis !== 'undefined') {
-    lenisInstance = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true
-    });
-
-    function raf(time) {
-      lenisInstance.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-  }
+  // Material Symbols icons load automatically via CSS — no JS initialization needed.
 
   // Landing page animations are now handled via high-performance CSS keyframes to prevent throttling bugs in background tabs.
 
@@ -615,12 +596,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (!issues || issues.length === 0) {
       issuesListContainer.innerHTML = `
-        <div class="notice-banner" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.2); color: #A7F3D0;">
-          <div class="notice-icon"><i data-lucide="check-circle-2"></i></div>
+        <div class="notice-banner" style="background: var(--success-bg); border-color: rgba(16, 185, 129, 0.2); color: var(--success);">
+          <span class="material-symbols-outlined notice-icon">check_circle</span>
           <div class="notice-content">Your resume satisfies all scoring checks! No critical issues found.</div>
         </div>
       `;
-      if (typeof lucide !== 'undefined') lucide.createIcons({ attrs: { class: 'inline-icon' } });
       return;
     }
 
@@ -637,7 +617,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="issue-title">${issue.title}</span>
             <span class="issue-location">${issue.location}</span>
           </div>
-          <i data-lucide="chevron-down" class="issue-chevron"></i>
+          <span class="material-symbols-outlined issue-chevron">expand_more</span>
         </div>
         <div class="issue-body">
           <div class="issue-section-para">
@@ -677,10 +657,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       issuesListContainer.appendChild(issueEl);
     });
-
-    if (typeof lucide !== 'undefined') {
-      lucide.createIcons();
-    }
   }
 
   // Filter Issues trigger
@@ -717,9 +693,8 @@ document.addEventListener('DOMContentLoaded', () => {
         notice.style.padding = '25px 0';
         notice.style.textAlign = 'center';
         notice.style.fontSize = '14px';
-        notice.innerHTML = '<i data-lucide="info" class="inline-icon"></i> No issues match the selected filters.';
+        notice.innerHTML = '<span class="material-symbols-outlined inline-icon">info</span> No issues match the selected filters.';
         issuesListContainer.appendChild(notice);
-        if (typeof lucide !== 'undefined') lucide.createIcons();
       }
     } else if (emptyNotice) {
       emptyNotice.remove();
@@ -807,7 +782,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="rewrite-actions">
           <button class="copy-btn" id="copyBtn-${index}">
-            <i data-lucide="copy" class="btn-icon"></i>
+            <span class="material-symbols-outlined btn-icon">content_copy</span>
             <span>Copy suggestion</span>
           </button>
         </div>
@@ -820,26 +795,18 @@ document.addEventListener('DOMContentLoaded', () => {
         navigator.clipboard.writeText(cleanText).then(() => {
           // Success Feedback
           copyBtn.classList.add('copied');
-          copyBtn.querySelector('span').textContent = 'Copied!';
-          copyBtn.querySelector('i').setAttribute('data-lucide', 'check');
-          if (typeof lucide !== 'undefined') lucide.createIcons();
+          copyBtn.querySelector('span:last-child').textContent = 'Copied!';
 
           // Reset back
           setTimeout(() => {
             copyBtn.classList.remove('copied');
-            copyBtn.querySelector('span').textContent = 'Copy suggestion';
-            copyBtn.querySelector('i').setAttribute('data-lucide', 'copy');
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+            copyBtn.querySelector('span:last-child').textContent = 'Copy suggestion';
           }, 2000);
         });
       });
 
       rewriteListContainer.appendChild(card);
     });
-
-    if (typeof lucide !== 'undefined') {
-      lucide.createIcons();
-    }
   }
 
   // ==========================================
@@ -873,7 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       card.innerHTML = `
         <div class="section-card-header">
-          <span class="section-card-icon"><i data-lucide="${getSectionIcon(key)}" class="inline-icon"></i></span>
+          <span class="section-card-icon"><span class="material-symbols-outlined">${getSectionIcon(key)}</span></span>
           <div class="section-card-info">
             <span class="section-card-title">${section.label}</span>
             <span class="section-card-words">${section.wordCount} words</span>
@@ -888,26 +855,24 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="section-readiness-row">
           <span class="${section.readinessClass}">${section.readiness}</span>
-          ${section.score >= 7 ? '<span class="job-ready-badge"><i data-lucide="check-circle-2" class="inline-icon"></i> Job-Ready</span>' : ''}
+          ${section.score >= 7 ? '<span class="job-ready-badge"><span class="material-symbols-outlined" style="font-size:14px">check_circle</span> Job-Ready</span>' : ''}
         </div>
         <ul class="section-issues-list">${issuesHtml}</ul>
       `;
 
       container.appendChild(card);
     }
-
-    if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 
   function getSectionIcon(key) {
     const icons = {
-      summary: 'user',
-      experience: 'briefcase',
-      education: 'graduation-cap',
-      skills: 'zap',
-      projects: 'folder-kanban'
+      summary: 'person',
+      experience: 'work',
+      education: 'school',
+      skills: 'lightning_bolt',
+      projects: 'folder_open'
     };
-    return icons[key] || 'file-text';
+    return icons[key] || 'description';
   }
 
   // ==========================================
@@ -1086,13 +1051,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => {
       copyImprovedBtn.classList.add('copied');
-      const span = copyImprovedBtn.querySelector('span');
+      const span = copyImprovedBtn.querySelector('span:last-child');
       span.textContent = 'Copied!';
-      if (typeof lucide !== 'undefined') lucide.createIcons();
       setTimeout(() => {
         copyImprovedBtn.classList.remove('copied');
         span.textContent = 'Copy';
-        if (typeof lucide !== 'undefined') lucide.createIcons();
       }, 2000);
     }).catch(() => {
       alert('Failed to copy text.');

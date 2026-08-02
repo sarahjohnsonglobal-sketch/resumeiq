@@ -1,27 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Initialize Lucide Icons
-  if (typeof lucide !== 'undefined') {
-    lucide.createIcons();
-  }
+  // Material Symbols icons load automatically via CSS — no JS initialization needed.
 
-  // Initialize Lenis Smooth Scroll
-  let lenisInstance;
-  if (typeof Lenis !== 'undefined') {
-    lenisInstance = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true
-    });
-
-    function raf(time) {
-      lenisInstance.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-  }
-
-  // Handle smooth scrolling for local anchors (like #howItWorks)
+  // Handle smooth scrolling for local anchors
   document.querySelectorAll('.scroll-to-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const targetId = btn.getAttribute('href');
@@ -29,11 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const targetElement = document.querySelector(targetId);
         if (targetElement) {
-          if (lenisInstance) {
-            lenisInstance.scrollTo(targetElement, { offset: -20 });
-          } else {
-            targetElement.scrollIntoView({ behavior: 'smooth' });
-          }
+          targetElement.scrollIntoView({ behavior: 'smooth' });
         }
       }
     });
@@ -47,6 +24,31 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = `analyze.html?keywords=${encodeURIComponent(keywords)}`;
       }
     });
+  });
+
+  // Intersection Observer for scroll-triggered animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('opacity-100', 'translate-y-0');
+        entry.target.classList.remove('opacity-0', 'translate-y-10');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('section').forEach(section => {
+    section.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-10');
+    observer.observe(section);
+  });
+
+  // Header scroll effect
+  window.addEventListener('scroll', () => {
+    const header = document.querySelector('header');
+    if (window.scrollY > 20) {
+      header.classList.add('shadow-md');
+    } else {
+      header.classList.remove('shadow-md');
+    }
   });
 
 });

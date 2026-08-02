@@ -6,35 +6,21 @@
   <title>Sign Up - ResumeIQ</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script>if (localStorage.getItem('token')) { window.location.href = '/analyze.html'; }</script>
-  <style>
-    .auth-container { max-width: 400px; margin: 100px auto; padding: 40px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
-    .auth-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; margin-bottom: 24px; text-align: center; color: #fff; }
-    .auth-form { display: flex; flex-direction: column; gap: 14px; }
-    .auth-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 14px 20px; border-radius: 12px; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; outline: none; transition: all 0.3s ease; }
-    .auth-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(99,102,241,0.2); }
-    .auth-submit { margin-top: 4px; width: 100%; justify-content: center; }
-    .auth-links { margin-top: 24px; text-align: center; font-size: 0.9rem; color: var(--text-muted); }
-    .auth-links a { color: var(--primary); text-decoration: none; font-weight: 500; }
-    .auth-links a:hover { color: var(--primary-light); }
-    .auth-error { color: #ef4444; font-size: 0.9rem; text-align: center; margin-bottom: 12px; display: none; }
-  </style>
 </head>
 <body>
-  <div class="hero-glow-1"></div>
-  <div class="hero-glow-2"></div>
   <header class="app-header">
-    <div class="container header-container">
+    <div class="header-container">
       <a href="/" class="logo-link">
         <div class="logo">
-          <span class="logo-icon"><i data-lucide="file-check"></i></span>
-          <span class="logo-text">Resume<span class="highlight">IQ</span></span>
+          <span class="logo-icon"><span class="material-symbols-outlined">bubble_chart</span></span>
+          <span class="logo-text">ResumeIQ</span>
         </div>
       </a>
     </div>
@@ -55,6 +41,5 @@
     </div>
   </main>
   <script src="js/auth.js"></script>
-  <script>lucide.createIcons();</script>
 </body>
 </html>
