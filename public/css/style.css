@@ -997,6 +997,52 @@ h1, h2, h3, h4, h5, h6 {
   padding-top: 20px;
 }
 
+.field-selector-section {
+  margin-bottom: 20px;
+}
+
+.field-selector-label {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--on-surface);
+  margin-bottom: 12px;
+}
+
+.field-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.field-chip {
+  background: var(--surface-container-low);
+  border: 1px solid var(--border-subtle);
+  color: var(--on-surface-variant);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  white-space: nowrap;
+}
+
+.field-chip:hover {
+  border-color: rgba(79, 70, 229, 0.3);
+  color: var(--primary);
+  background: var(--primary-glow);
+}
+
+.field-chip.active {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
+}
+
 .jd-toggle-btn {
   background: var(--surface-container-low);
   border: 1px solid var(--border-subtle);

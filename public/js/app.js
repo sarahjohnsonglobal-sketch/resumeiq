@@ -80,6 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const improverLoading = document.getElementById('improverLoading');
   const originalWordCount = document.getElementById('originalWordCount');
 
+  // Field selector chips
+  const fieldChipsContainer = document.getElementById('fieldChipsContainer');
+  let selectedField = '';
+
   // ==========================================
   // 1. DRAG AND DROP / FILE SELECT LOGIC
   // ==========================================
@@ -175,6 +179,35 @@ document.addEventListener('DOMContentLoaded', () => {
     submitBtn.disabled = true;
   }
 
+  // ==========================================
+  // 1b. FIELD SELECTOR CHIPS
+  // ==========================================
+  fieldChipsContainer.addEventListener('click', (e) => {
+    const chip = e.target.closest('.field-chip');
+    if (!chip) return;
+
+    // Toggle active state
+    fieldChipsContainer.querySelectorAll('.field-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+
+    selectedField = chip.getAttribute('data-field');
+    const fieldKeywords = chip.getAttribute('data-keywords');
+
+    // Auto-fill JD input with keywords if not already manually filled
+    if (fieldKeywords && !jdInput.dataset.manuallyEdited) {
+      jdInput.value = fieldKeywords;
+      // Auto-expand JD section
+      jdWrapper.classList.remove('collapsed');
+      jdWrapper.classList.add('expanded');
+      jdToggleBtn.classList.add('active');
+    }
+  });
+
+  // Track manual edits to JD so we don't overwrite
+  jdInput.addEventListener('input', () => {
+    jdInput.dataset.manuallyEdited = 'true';
+  });
+
   function formatBytes(bytes, decimals = 1) {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -206,6 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (keywordsParam) {
     // Pre-populate the Job Description input
     jdInput.value = decodeURIComponent(keywordsParam);
+    jdInput.dataset.manuallyEdited = 'true';
     
     // Expand the Job Description collapsible panel automatically
     jdWrapper.classList.remove('collapsed');
@@ -308,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const formData = new FormData();
     formData.append('resumeFile', selectedFile);
     formData.append('jobDescription', jdInput.value);
+    formData.append('targetField', selectedField);
 
     let apiResponse = null;
     let apiError = null;
@@ -932,8 +967,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Reset Form and State
     selectedFile = null;
     lastAnalysisResult = null;
+    selectedField = '';
     fileInput.value = '';
     jdInput.value = '';
+    jdInput.dataset.manuallyEdited = '';
+    
+    // Reset field chips
+    fieldChipsContainer.querySelectorAll('.field-chip').forEach(c => c.classList.remove('active'));
+    
+    // Collapse JD section
+    jdWrapper.classList.remove('expanded');
+    jdWrapper.classList.add('collapsed');
+    jdToggleBtn.classList.remove('active');
     
     // Clear select file details container
     dropZone.querySelector('.drop-zone-content').classList.remove('hidden');

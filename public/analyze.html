@@ -59,7 +59,24 @@
 
           <div class="upload-dashboard-box glass-card animate-in">
             <form id="analyzeForm" enctype="multipart/form-data">
-              
+
+              <div class="field-selector-section">
+                <label class="field-selector-label">
+                  <span class="material-symbols-outlined inline-icon">work</span>
+                  What field is your resume for?
+                </label>
+                <div class="field-chips-container" id="fieldChipsContainer">
+                  <button type="button" class="field-chip" data-field="software-engineering" data-keywords="Required Skills: JavaScript, TypeScript, React.js, Node.js, Python, Java, REST APIs, Git, AWS, Docker, CI/CD, Agile, SQL, HTML5, CSS3, Webpack, Jest, Microservices, Cloud Infrastructure, System Design.">Software Engineer</button>
+                  <button type="button" class="field-chip" data-field="data-science" data-keywords="Required Skills: Python, SQL, Machine Learning, Data Modeling, Statistics, R, Pandas, NumPy, Scikit-Learn, TensorFlow, Data Visualization, Tableau, Predictive Analytics, Big Data, Spark.">Data Scientist</button>
+                  <button type="button" class="field-chip" data-field="product-management" data-keywords="Required Skills: Product Lifecycle, Agile, Scrum, Jira, Product Roadmap, User Stories, Product Spec, Feature Prioritization, Customer Discovery, SQL, A/B Testing, Market Research, KPI tracking, Stakeholder Management.">Product Manager</button>
+                  <button type="button" class="field-chip" data-field="design" data-keywords="Required Skills: UI Design, UX Research, Figma, Wireframing, Prototyping, User Flows, Information Architecture, Interaction Design, Usability Testing, Visual Design, Design Systems, Adobe CC, Mobile Design.">Designer</button>
+                  <button type="button" class="field-chip" data-field="marketing" data-keywords="Required Skills: Digital Marketing, SEO, Google Analytics, Content Strategy, SEM, PPC Campaigns, Social Media Management, Email Marketing, Hubspot, Copywriting, Marketing Automation, Conversion Rate Optimization, Brand Growth.">Marketing</button>
+                  <button type="button" class="field-chip" data-field="finance" data-keywords="Required Skills: Financial Modeling, Valuation, Excel, SQL, Forecasting, Auditing, Corporate Finance, Risk Management, Reporting, Accounting, Mergers & Acquisitions, PowerPoint, Balance Sheet Analysis, Cash Flow.">Finance</button>
+                  <button type="button" class="field-chip" data-field="devops" data-keywords="Required Skills: AWS, Azure, GCP, Docker, Kubernetes, Terraform, CI/CD, Jenkins, Linux, Bash, Python, Ansible, Monitoring, Prometheus, Grafana, Infrastructure as Code, Cloud Security.">DevOps</button>
+                  <button type="button" class="field-chip" data-field="other" data-keywords="">Other</button>
+                </div>
+              </div>
+
               <div class="drag-drop-zone" id="dropZone">
                 <input type="file" id="fileInput" name="resumeFile" accept=".pdf,.docx,.txt" class="hidden-file-input">
                 <div class="drop-zone-content">
