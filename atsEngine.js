@@ -30,14 +30,56 @@ function analyzeATS(text, fileExtension, pdfInfo = {}, fileBuffer = null) {
   const hasPhone = phoneRegex.test(text);
   const hasLinkedIn = linkedinRegex.test(text);
   
-  // Location check (common pattern: City, State or ZIP)
-  // We can look for keywords like "CA", "NY", "TX", "London", "New York", "San Francisco", "India", etc.
-  const locationKeywords = ['alaska', 'alabama', 'arkansas', 'arizona', 'california', 'colorado', 'connecticut', 'delaware', 'florida', 'georgia', 'hawaii', 'iowa', 'idaho', 'illinois', 'indiana', 'kansas', 'kentucky', 'louisiana', 'massachusetts', 'maryland', 'maine', 'michigan', 'minnesota', 'missouri', 'mississippi', 'montana', 'north carolina', 'north dakota', 'nebraska', 'new hampshire', 'new jersey', 'new mexico', 'nevada', 'new york', 'ohio', 'oklahoma', 'oregon', 'pennsylvania', 'rhode island', 'south carolina', 'south dakota', 'tennessee', 'texas', 'utah', 'virginia', 'vermont', 'washington', 'wisconsin', 'west virginia', 'wyoming', 'london', 'toronto', 'sydney', 'singapore', 'berlin', 'paris', 'tokyo', 'mumbai', 'bangalore', 'delhi', 'san francisco', 'seattle', 'boston', 'chicago', 'los angeles', 'austin', 'denver', 'atlanta'];
+  // Location check — pattern-based + keyword-based
+  // 1. Regex: detect "City, State/Country/Province" pattern (e.g. "Chishtian, Punjab, Pakistan")
+  const locationPatternRegex = /\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s*,\s*[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s*,\s*[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)?/g;
+  const locationPatternMatches = text.match(locationPatternRegex) || [];
+  
+  // 2. Keyword-based: expanded list covering more countries and cities
+  const locationKeywords = [
+    // US States
+    'alaska', 'alabama', 'arkansas', 'arizona', 'california', 'colorado', 'connecticut', 'delaware', 'florida', 'georgia', 'hawaii', 'iowa', 'idaho', 'illinois', 'indiana', 'kansas', 'kentucky', 'louisiana', 'massachusetts', 'maryland', 'maine', 'michigan', 'minnesota', 'missouri', 'mississippi', 'montana', 'north carolina', 'north dakota', 'nebraska', 'new hampshire', 'new jersey', 'new mexico', 'nevada', 'new york', 'ohio', 'oklahoma', 'oregon', 'pennsylvania', 'rhode island', 'south carolina', 'south dakota', 'tennessee', 'texas', 'utah', 'virginia', 'vermont', 'washington', 'wisconsin', 'west virginia', 'wyoming',
+    // Major world cities
+    'london', 'toronto', 'sydney', 'singapore', 'berlin', 'paris', 'tokyo', 'mumbai', 'bangalore', 'delhi', 'san francisco', 'seattle', 'boston', 'chicago', 'los angeles', 'austin', 'denver', 'atlanta',
+    // Pakistan
+    'pakistan', 'punjab', 'sindh', 'khyber', 'balochistan', 'islamabad', 'karachi', 'lahore', 'faisalabad', 'rawalpindi', 'multan', 'hyderabad', 'peshawar', 'quetta', 'sialkot', 'gujranwala', 'lahore', 'chishtian', 'bahawalnagar', 'bahawalpur', 'sargodha', ' Abbottabad', 'mardan', 'swat',
+    // India
+    'india', 'maharashtra', 'karnataka', 'tamil nadu', 'telangana', 'kerala', 'gujarat', 'rajasthan', 'uttar pradesh', 'madhya pradesh', 'west bengal', 'punjab', 'haryana', 'chennai', 'pune', 'ahmedabad', 'jaipur', 'lucknow', 'kanpur', 'nagpur', 'indore', 'thane', 'bhopal', 'patna', 'vadodara', 'ghaziabad', 'ludhiana', 'agra', 'nashik', 'faridabad', 'meerut', 'rajkot', 'varanasi', 'srinagar', 'aurangabad', 'dhanbad', 'amritsar', 'allahabad', 'ranchi', 'howrah', 'coimbatore', 'jabalpur', 'gwalior', 'vijayawada', 'jodhpur', 'madurai', 'raipur', 'kochi', 'chandigarh', 'mysore', 'trichy', 'bareilly', 'gorakhpur', 'tiruchirappalli', 'noida', 'gurgaon',
+    // UAE / Middle East
+    'dubai', 'abu dhabi', 'sharjah', 'uae', 'united arab emirates', 'saudi arabia', 'riyadh', 'jeddah', 'doha', 'qatar', 'bahrain', 'kuwait', 'oman', 'muscat',
+    // UK
+    'manchester', 'birmingham', 'leeds', 'glasgow', 'edinburgh', 'bristol', 'liverpool', 'cardiff', 'belfast',
+    // Canada
+    'vancouver', 'montreal', 'calgary', 'ottawa', 'edmonton', 'mississauga', 'winnipeg', 'quebec',
+    // Australia
+    'melbourne', 'brisbane', 'perth', 'adelaide', 'gold coast', 'canberra',
+    // Europe
+    'amsterdam', 'munich', 'frankfurt', 'zurich', 'vienna', 'brussels', 'milan', 'rome', 'madrid', 'barcelona', 'istanbul', 'warsaw', 'prague', 'budapest', 'lisbon', 'dublin',
+    // Asia
+    'beijing', 'shanghai', 'hong kong', 'seoul', 'bangkok', 'jakarta', 'manila', 'kuala lumpur', 'hanoi', 'ho chi minh', 'taipei', 'dhaka', 'colombo', 'kathmandu',
+    // Africa
+    'cape town', 'johannesburg', 'nairobi', 'lagos', 'cairo', 'accra', 'casablanca'
+  ];
+
   let hasLocation = false;
-  for (const loc of locationKeywords) {
-    if (normalizedText.includes(loc)) {
+  
+  // Check pattern matches — filter out false positives (common non-location words that match "Word, Word" pattern)
+  const falsePositiveLocations = ['dear sir', 'thank you', 'sincerely', 'best regards', 'phone number', 'email address', 'date of birth', 'marital status', 'references available'];
+  for (const match of locationPatternMatches) {
+    const lower = match.toLowerCase().trim();
+    if (!falsePositiveLocations.some(fp => lower.includes(fp)) && match.split(',')[0].trim().length > 1) {
       hasLocation = true;
       break;
+    }
+  }
+  
+  // Check keyword matches
+  if (!hasLocation) {
+    for (const loc of locationKeywords) {
+      if (normalizedText.includes(loc)) {
+        hasLocation = true;
+        break;
+      }
     }
   }
 
@@ -237,7 +279,14 @@ function analyzeATS(text, fileExtension, pdfInfo = {}, fileBuffer = null) {
   }
 
   // Resume length check
-  const words = text.match(/\b\w+\b/g) || [];
+  // Clean text before counting: strip non-readable chars, PDF artifacts, and very short tokens
+  const cleanedForCount = text
+    .replace(/[^\x20-\x7E\n\r\t]/g, ' ')  // Remove non-printable chars
+    .replace(/\b[A-F0-9]{6,}\b/g, ' ')     // Remove hex sequences (PDF artifacts)
+    .replace(/\b\w{1}\b/g, ' ')             // Remove single-char "words" (PDF fragments)
+    .replace(/\s+/g, ' ')
+    .trim();
+  const words = cleanedForCount.match(/\b[a-zA-Z]{2,}\b/g) || [];
   const wordCount = words.length;
   
   // Approximate page count
@@ -292,7 +341,8 @@ function analyzeATS(text, fileExtension, pdfInfo = {}, fileBuffer = null) {
   }
 
   // Bullet points vs paragraphs check
-  const bulletPointRegex = /^(\s*[-•*+o]|\s*\d+\.\s+)/gm;
+  // Expanded bullet character set: standard bullets, arrows, symbols, dashes, numbered
+  const bulletPointRegex = /^(\s*[-\u2012\u2013\u2014\u2015\u2022\u2023\u25E6\u2043\u2219\u25AA\u25AB\u25A0\u25B6\u25C0\u27A2\u2794\u2736\u2737\u2738\u2756\u2605\u2606\u2714\u2718\u2611\u2610\u00BB\u00AB\u2039\u203A•\u00B7\*+o]|\s*\d+[.)]\s*|\s*\([a-zA-Z0-9]+\)\s*)/gm;
   const bulletCount = (text.match(bulletPointRegex) || []).length;
   
   // Find paragraphs (lines with more than 15 words and no bullet indicator)

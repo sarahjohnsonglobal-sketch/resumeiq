@@ -92,6 +92,14 @@ app.post('/api/analyze', authenticateToken, upload.single('resumeFile'), async (
         } catch (rawErr) {
           console.error('Raw PDF extraction also failed:', rawErr.message);
         }
+        // Sanitize raw extraction: remove PDF artifacts, hex sequences, control chars
+        if (extractedText) {
+          extractedText = extractedText
+            .replace(/[^\x20-\x7E\n\r\t]/g, ' ')
+            .replace(/\b[A-F0-9]{8,}\b/g, ' ')
+            .replace(/\s{3,}/g, '  ')
+            .trim();
+        }
         if (!extractedText || extractedText.trim().length < 10) {
           return res.status(422).json({ error: 'Failed to parse PDF file. Ensure the document is not corrupted.' });
         }
