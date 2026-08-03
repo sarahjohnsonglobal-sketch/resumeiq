@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // State Variables
   let selectedFile = null;
   let lastAnalysisResult = null;
+  const lenisInstance = window.lenisInstance || null;
 
   // DOM Elements
   const uploadScreen = document.getElementById('uploadScreen');
@@ -887,13 +888,14 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSpan.textContent = 'Generating PDF...';
 
     try {
+      const { extractedText, ...pdfPayload } = lastAnalysisResult;
       const response = await fetch('/api/report/pdf', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + localStorage.getItem('token')
         },
-        body: JSON.stringify(lastAnalysisResult)
+        body: JSON.stringify(pdfPayload)
       });
       
       if (response.status === 401 || response.status === 403) {
