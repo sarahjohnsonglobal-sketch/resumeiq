@@ -38,6 +38,11 @@ app.post('/api/analyze', authenticateToken, upload.single('resumeFile'), async (
     }
 
     const jobDescription = req.body.jobDescription || '';
+    const otherFieldText = req.body.otherFieldText || '';
+    
+    // Combine JD with any custom "Other" field text
+    const combinedJD = [jobDescription, otherFieldText].filter(Boolean).join('\n');
+    
     const fileBuffer = req.file.buffer;
     const fileName = req.file.originalname;
     const fileExt = path.extname(fileName).toLowerCase();
@@ -109,7 +114,7 @@ app.post('/api/analyze', authenticateToken, upload.single('resumeFile'), async (
     }
 
     const atsResult = analyzeATS(extractedText, fileExt, pdfMetadata, fileBuffer);
-    const aiResult = await analyzeAI(extractedText, jobDescription);
+    const aiResult = await analyzeAI(extractedText, combinedJD);
 
     let overallScore = 0;
     let categoryScores = {
@@ -119,7 +124,7 @@ app.post('/api/analyze', authenticateToken, upload.single('resumeFile'), async (
       keywordMatch: aiResult.keywordMatchScore
     };
 
-    const hasJD = !!(jobDescription && jobDescription.trim().length > 0);
+    const hasJD = !!(combinedJD && combinedJD.trim().length > 0);
 
     if (hasJD) {
       const activeSum = categoryScores.ats + categoryScores.structure + categoryScores.content + categoryScores.keywordMatch;

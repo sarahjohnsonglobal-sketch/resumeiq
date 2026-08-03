@@ -59,7 +59,32 @@
 
           <div class="upload-dashboard-box glass-card animate-in">
             <form id="analyzeForm" enctype="multipart/form-data">
-              
+
+              <div class="field-select-section">
+                <label for="fieldSelect" class="field-select-label">
+                  <span class="material-symbols-outlined inline-icon">work</span>
+                  What job is your resume for?
+                </label>
+                <div class="field-select-wrapper">
+                  <select id="fieldSelect" class="form-select field-dropdown">
+                    <option value="" disabled selected>Select a field...</option>
+                    <option value="software-engineering">Software Engineering</option>
+                    <option value="data-science">Data Science / Analytics</option>
+                    <option value="product-management">Product Management</option>
+                    <option value="design">UI/UX Design</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="finance">Finance / Accounting</option>
+                    <option value="devops">DevOps / Cloud</option>
+                    <option value="healthcare">Healthcare</option>
+                    <option value="education">Education</option>
+                    <option value="other">Other (type below)</option>
+                  </select>
+                </div>
+                <div class="other-field-input-wrapper hidden" id="otherFieldWrapper">
+                  <input type="text" id="otherFieldInput" class="form-textarea other-field-input" placeholder="Type your job field or role, e.g. Civil Engineer, Lawyer, Graphic Designer..." maxlength="100">
+                </div>
+              </div>
+
               <div class="drag-drop-zone" id="dropZone">
                 <input type="file" id="fileInput" name="resumeFile" accept=".pdf,.docx,.txt" class="hidden-file-input">
                 <div class="drop-zone-content">

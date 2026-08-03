@@ -80,6 +80,53 @@ document.addEventListener('DOMContentLoaded', () => {
   const improverLoading = document.getElementById('improverLoading');
   const originalWordCount = document.getElementById('originalWordCount');
 
+  // Field Selector elements
+  const fieldSelect = document.getElementById('fieldSelect');
+  const otherFieldWrapper = document.getElementById('otherFieldWrapper');
+  const otherFieldInput = document.getElementById('otherFieldInput');
+
+  // Predefined field keywords mapping
+  const fieldKeywordsMap = {
+    'software-engineering': 'Required Skills: JavaScript, TypeScript, React.js, Node.js, Python, Java, REST APIs, Git, AWS, Docker, CI/CD, Agile, SQL, HTML5, CSS3, Webpack, Jest, Microservices, Cloud Infrastructure, System Design.',
+    'data-science': 'Required Skills: Python, SQL, Machine Learning, Data Modeling, Statistics, R, Pandas, NumPy, Scikit-Learn, TensorFlow, Data Visualization, Tableau, Predictive Analytics, Big Data, Spark.',
+    'product-management': 'Required Skills: Product Lifecycle, Agile, Scrum, Jira, Product Roadmap, User Stories, Product Spec, Feature Prioritization, Customer Discovery, SQL, A/B Testing, Market Research, KPI tracking, Stakeholder Management.',
+    'design': 'Required Skills: UI Design, UX Research, Figma, Wireframing, Prototyping, User Flows, Information Architecture, Interaction Design, Usability Testing, Visual Design, Design Systems, Adobe CC, Mobile Design.',
+    'marketing': 'Required Skills: Digital Marketing, SEO, Google Analytics, Content Strategy, SEM, PPC Campaigns, Social Media Management, Email Marketing, Hubspot, Copywriting, Marketing Automation, Conversion Rate Optimization, Brand Growth.',
+    'finance': 'Required Skills: Financial Modeling, Valuation, Excel, SQL, Forecasting, Auditing, Corporate Finance, Risk Management, Reporting, Accounting, Mergers & Acquisitions, PowerPoint, Balance Sheet Analysis, Cash Flow.',
+    'devops': 'Required Skills: AWS, Azure, GCP, Docker, Kubernetes, Terraform, CI/CD, Jenkins, Linux, Bash, Python, Ansible, Monitoring, Prometheus, Grafana, Infrastructure as Code, Cloud Security.',
+    'healthcare': 'Required Skills: Patient Care, Clinical Experience, Electronic Health Records, HIPAA, Medical Terminology, CPR Certified, Treatment Planning, Healthcare Administration, Medical Records, Infection Control.',
+    'education': 'Required Skills: Curriculum Development, Classroom Management, Lesson Planning, Student Assessment, Educational Technology, Differentiated Instruction, Parent Communication, IEP, Classroom Safety, Student Engagement.'
+  };
+
+  // ==========================================
+  // 0. FIELD SELECTOR LOGIC
+  // ==========================================
+  fieldSelect.addEventListener('change', () => {
+    const val = fieldSelect.value;
+
+    if (val === 'other') {
+      otherFieldWrapper.classList.remove('hidden');
+      otherFieldInput.focus();
+    } else {
+      otherFieldWrapper.classList.add('hidden');
+      otherFieldInput.value = '';
+    }
+
+    // Auto-fill JD with keywords for the selected field (if JD is empty or was auto-filled)
+    const keywords = fieldKeywordsMap[val];
+    if (keywords && !jdInput.dataset.manuallyEdited) {
+      jdInput.value = keywords;
+      jdWrapper.classList.remove('collapsed');
+      jdWrapper.classList.add('expanded');
+      jdToggleBtn.classList.add('active');
+    }
+  });
+
+  // Track manual JD edits so we don't overwrite
+  jdInput.addEventListener('input', () => {
+    jdInput.dataset.manuallyEdited = 'true';
+  });
+
   // ==========================================
   // 1. DRAG AND DROP / FILE SELECT LOGIC
   // ==========================================
@@ -206,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (keywordsParam) {
     // Pre-populate the Job Description input
     jdInput.value = decodeURIComponent(keywordsParam);
+    jdInput.dataset.manuallyEdited = 'true';
     
     // Expand the Job Description collapsible panel automatically
     jdWrapper.classList.remove('collapsed');
@@ -308,6 +356,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const formData = new FormData();
     formData.append('resumeFile', selectedFile);
     formData.append('jobDescription', jdInput.value);
+    formData.append('targetField', fieldSelect.value);
+    formData.append('otherFieldText', otherFieldInput.value);
 
     let apiResponse = null;
     let apiError = null;
@@ -934,6 +984,17 @@ document.addEventListener('DOMContentLoaded', () => {
     lastAnalysisResult = null;
     fileInput.value = '';
     jdInput.value = '';
+    jdInput.dataset.manuallyEdited = '';
+    
+    // Reset field selector
+    fieldSelect.selectedIndex = 0;
+    otherFieldInput.value = '';
+    otherFieldWrapper.classList.add('hidden');
+
+    // Collapse JD section
+    jdWrapper.classList.remove('expanded');
+    jdWrapper.classList.add('collapsed');
+    jdToggleBtn.classList.remove('active');
     
     // Clear select file details container
     dropZone.querySelector('.drop-zone-content').classList.remove('hidden');
